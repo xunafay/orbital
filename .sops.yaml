@@ -1,0 +1,17 @@
+keys:
+  - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+  - age14tsgzrgh5k97tyx3j4u2sa2sfw6a6fv7uxgfmyzumwd7tz9xtqksm93ach
+creation_rules:
+  - path_regex: secrets/machines/mun/(age\.key|ssh/ssh_host_ed25519_key)\.yaml
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+  - path_regex: secrets/machines/mun/.*
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+          - age14tsgzrgh5k97tyx3j4u2sa2sfw6a6fv7uxgfmyzumwd7tz9xtqksm93ach
+  - path_regex: secrets/machines/mun/age\.key\.yaml
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
