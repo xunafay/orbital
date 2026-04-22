@@ -1,5 +1,5 @@
 _:
-{ inputs, machineName, ... }:
+{ inputs, ... }:
 {
   networking.firewall = {
     enable = true;

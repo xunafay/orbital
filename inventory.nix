@@ -4,7 +4,7 @@
       tags = [ "relay" "server" ];
       deploy.targetHost = "root@204.168.191.193";
       # deploy.buildHost = "root@";
-      nebulaIp = "10.10.0.1";
+      internalIp = "10.10.0.1";
     };
   };
 
@@ -34,6 +34,9 @@
     firewall = {
       roles.default.tags = [ "all" ];
       roles.spotify.tags = [ "workstation" ];
+    };
+    nebula = {
+      roles.lighthouse.tags = [ "relay" ];
     };
     admin-ssh = {
       roles.default.tags = [ "all" ];

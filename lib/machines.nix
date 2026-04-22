@@ -7,11 +7,11 @@ lib.mapAttrs (name: machine:
     system = machine.system or "x86_64-linux";
     specialArgs = {
       inherit inputs self inventory;
-      machineName = name;
-      nebulaIp    = machine.nebulaIp;
+      machine = { name = name; internalIp = machine.internalIp; };
     };
     modules =
       [
+        ../modules/secrets.nix
         ../machines/${name}/configuration.nix
         inputs.disko.nixosModules.disko
         inputs.sops-nix.nixosModules.sops

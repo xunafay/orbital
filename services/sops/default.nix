@@ -1,5 +1,5 @@
 _:
-{ inputs, machineName, ... }:
+{ inputs, machine, ... }:
 {
   imports = [
     inputs.sops-nix.nixosModules.sops
@@ -9,7 +9,7 @@ _:
   sops.age.sshKeyPaths = [];
 
   sops.secrets."ssh_host_ed25519_key" = {
-    sopsFile = ../../secrets/machines/${machineName}/ssh/ssh_host_ed25519_key.yaml;
+    sopsFile = ../../secrets/machines/${machine.name}/ssh/ssh_host_ed25519_key.yaml;
     format = "yaml";
     key = "data";
     path = "/etc/ssh/ssh_host_ed25519_key";

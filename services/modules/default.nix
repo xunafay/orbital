@@ -1,5 +1,5 @@
 settings:
-{ inputs, machineName, ... }:
+{ inputs, ... }:
 let
   modules = settings.modules or [];
 in

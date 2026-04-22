@@ -1,5 +1,5 @@
 _:
-{ inputs, machineName, ... }:
+{ inputs, ... }:
 {
   networking.firewall = {
     allowedTCPPorts = [ 57621 22 ]; # spotify device discovery

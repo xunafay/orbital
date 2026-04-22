@@ -15,6 +15,7 @@ let
   bootstrapOutputs = import ./bootstrap.nix  { inherit lib inputs inventory pkgs; };
   sopsOutputs      = import ./sops.nix       { inherit lib inputs inventory pkgs; };
   installOutputs   = import ./install.nix    { inherit lib inputs inventory pkgs; };
+  generateOutputs  = import ./generate.nix   { inherit lib inventory pkgs nixosConfigs; };
 in
 {
   nixosConfigurations = nixosConfigs;
@@ -25,7 +26,8 @@ in
     deployOutputs.apps
     // bootstrapOutputs.apps
     // sopsOutputs.apps
-    // installOutputs.apps;
+    // installOutputs.apps
+    // generateOutputs.apps;
 
   devShells.x86_64-linux.default = pkgs.mkShell {
     packages = with pkgs; [ sops age nebula ssh-to-age yq-go ];
