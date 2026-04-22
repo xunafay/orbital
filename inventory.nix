@@ -13,6 +13,7 @@
   #
   # service directory convention:
   #   services/<service-name>/<role-name>.nix
+  # if a role is not found, it will fall back to services/<service-name>/default.nix.
   #
   # inventory convention:
   #   services.<service-name>.roles.<role-name> = {
@@ -21,6 +22,14 @@
   services = {
     sops = {
       roles.default.tags = [ "all" ];
+    };
+    modules = {
+      roles.workstation.tags = [ "workstation" ];
+      roles.workstation.settings = {
+        modules = [
+          ./modules/networkmanager.nix
+        ];
+      };
     };
     admin-ssh = {
       roles.default.tags = [ "all" ];
