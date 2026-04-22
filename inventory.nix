@@ -31,6 +31,10 @@
         ];
       };
     };
+    firewall = {
+      roles.default.tags = [ "all" ];
+      roles.spotify.tags = [ "workstation" ];
+    };
     admin-ssh = {
       roles.default.tags = [ "all" ];
       roles.default.settings = {
