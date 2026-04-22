@@ -9,10 +9,7 @@ usage() {
   echo "Commands:"
   echo "  edit    <path>   Create or edit a secret (opens \$EDITOR via sops)"
   echo "  delete  <path>   Delete a secret file from the repo"
-  echo ""
-  echo "Examples:"
-  echo "  secret edit   secrets/machines/mun/nebula.yaml"
-  echo "  secret delete secrets/machines/mun/nebula.yaml"
+  echo "  view  <path>     Display the decrypted contents of a secret file"
 }
 
 if [ -z "$COMMAND" ]; then
@@ -46,7 +43,13 @@ case "$COMMAND" in
     rm "$SECRET_FULL"
     echo "    Done. Remember to remove any references to this secret and commit the deletion."
     ;;
-
+  view)
+    if [ ! -f "$SECRET_FULL" ]; then
+      echo "Error: $SECRET_PATH does not exist"
+      exit 1
+    fi
+    SOPS_AGE_KEY_FILE="$KEYS_FILE" sops decrypt "$SECRET_FULL"
+    ;;
   *)
     echo "Error: unknown command '$COMMAND'"
     echo ""
