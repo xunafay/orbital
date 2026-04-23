@@ -8,6 +8,7 @@ in
     openssh.authorizedKeys.keys = [ key ];
   }) keys;
 
+  services.fail2ban.enable = true;
   services.openssh = {
     enable = true;
     settings = {

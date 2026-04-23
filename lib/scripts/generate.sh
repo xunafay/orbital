@@ -16,6 +16,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 KEYS_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
 ADMIN_AGE_KEY=$(grep -i 'public key:' "$KEYS_FILE" | awk '{print $NF}')
 MACHINE_AGE_KEY=$(cat "$REPO_ROOT/secrets/machines/$MACHINE/age.pub")
+SHARED_AGE_KEY=$(cat "$REPO_ROOT/secrets/shared/shared.pub")
 
 echo "==> Running generators for $MACHINE..."
 
@@ -74,9 +75,9 @@ for name in "${ORDERED[@]}"; do
           sops decrypt --input-type yaml --output-type binary "$yaml" > "$in/$dep/$fname"
       else
         if [ "$shared" = "true" ]; then
-          plain="$REPO_ROOT/vars/shared/$dep/$fname"
+          plain="$REPO_ROOT/secrets/shared/$dep/$fname"
         else
-          plain="$REPO_ROOT/vars/$MACHINE/$dep/$fname"
+          plain="$REPO_ROOT/secrets/$MACHINE/$dep/$fname"
         fi
         [ -f "$plain" ] && cp "$plain" "$in/$dep/$fname"
       fi
@@ -111,15 +112,16 @@ for name in "${ORDERED[@]}"; do
       mkdir -p "$(dirname "$dest")"
       recipients="$ADMIN_AGE_KEY"
       [ "$deploy" = "true" ] && recipients="$ADMIN_AGE_KEY,$MACHINE_AGE_KEY"
+      [ "$shared" = "true" ] && recipients="$ADMIN_AGE_KEY,$SHARED_AGE_KEY"
       echo "  [encrypt] $fname -> $dest (shared=$shared, deploy=$deploy)"
       SOPS_AGE_KEY_FILE="$KEYS_FILE" SOPS_CONFIG=/dev/null \
         sops encrypt --input-type binary --output-type yaml \
         --age "$recipients" "$out/$fname" > "$dest"
     else
       if [ "$shared" = "true" ]; then
-        dest="$REPO_ROOT/vars/shared/$name/$fname"
+        dest="$REPO_ROOT/secrets/shared/$name/$fname"
       else
-        dest="$REPO_ROOT/vars/$MACHINE/$name/$fname"
+        dest="$REPO_ROOT/secrets/$MACHINE/$name/$fname"
       fi
       if [ -f "$dest" ]; then
         echo "  [skip] $dest already exists"

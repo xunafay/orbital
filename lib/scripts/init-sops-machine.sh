@@ -23,30 +23,51 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 SOPS_YAML="$REPO_ROOT/.sops.yaml"
 KEYS_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
 SECRETS_DIR="$REPO_ROOT/secrets/machines/$MACHINE"
+SHARED_DIR="$REPO_ROOT/secrets/shared"
 SSH_DIR="$SECRETS_DIR/ssh"
 
 AGE_PUB="$SECRETS_DIR/age.pub"
 AGE_SECRET="$SECRETS_DIR/age.key.yaml"
 SSH_PUB="$SSH_DIR/ssh_host_ed25519_key.pub"
 SSH_SECRET="$SSH_DIR/ssh_host_ed25519_key.yaml"
+SHARED_PUB="$SHARED_DIR/shared.pub"
+SHARED_SECRET="$SHARED_DIR/shared.key.yaml"
 
-mkdir -p "$SECRETS_DIR" "$SSH_DIR"
+mkdir -p "$SECRETS_DIR" "$SSH_DIR" "$SHARED_DIR" "$(dirname "$SHARED_PUB")"
 
 WORK_DIR=$(mktemp -d)
 trap 'rm -rf "$WORK_DIR"' EXIT
 
 if [ ! -f "$KEYS_FILE" ]; then
   echo "ERROR: No age key file found at $KEYS_FILE"
-  echo "Generate one with: age-keygen -o $KEYS_FILE"
   exit 1
 fi
 ADMIN_AGE_KEY=$(grep -i 'public key:' "$KEYS_FILE" | awk '{print $NF}')
 if [ -z "$ADMIN_AGE_KEY" ]; then
   echo "ERROR: Could not extract public key from $KEYS_FILE"
-  echo "Expected a line like: # public key: age1..."
   exit 1
 fi
 echo "==> Admin age key: $ADMIN_AGE_KEY"
+
+if [ -f "$SHARED_PUB" ] && [ -f "$SHARED_SECRET" ]; then
+  echo "==> Shared age keypair already exists, skipping."
+else
+  echo "==> Generating shared age keypair..."
+  age-keygen -o "$WORK_DIR/shared.key" 2>"$WORK_DIR/shared-keygen.out"
+  SHARED_AGE_PUB=$(grep -i 'public key:' "$WORK_DIR/shared-keygen.out" | awk '{print $NF}')
+
+  echo "$SHARED_AGE_PUB" > "$SHARED_PUB"
+  echo "    Shared age public key: $SHARED_AGE_PUB"
+
+  echo "==> Encrypting shared age private key → $SHARED_SECRET"
+  SOPS_AGE_KEY_FILE="$KEYS_FILE" SOPS_CONFIG=/dev/null \
+    sops encrypt --input-type binary --output-type yaml \
+      --age "$ADMIN_AGE_KEY" \
+      "$WORK_DIR/shared.key" > "$SHARED_SECRET"
+  echo "    Done."
+fi
+
+SHARED_AGE_PUB=$(cat "$SHARED_PUB")
 
 if [ -f "$AGE_PUB" ] && [ -f "$AGE_SECRET" ]; then
   echo "==> Age keypair already exists for $MACHINE, skipping."
@@ -87,21 +108,31 @@ else
 fi
 
 if [ ! -f "$SOPS_YAML" ]; then
-  echo "==> Creating $SOPS_YAML..."
   printf 'keys: []\ncreation_rules: []\n' > "$SOPS_YAML"
 fi
 
-if ! yq --exit-status ".keys[] | select(. == \"$ADMIN_AGE_KEY\")" "$SOPS_YAML" > /dev/null 2>&1; then
-  yq -i ".keys += [\"$ADMIN_AGE_KEY\"]" "$SOPS_YAML"
-  echo "==> Added admin key to .sops.yaml"
+for key in "$ADMIN_AGE_KEY" "$MACHINE_AGE_PUB" "$SHARED_AGE_PUB"; do
+  if ! yq --exit-status ".keys[] | select(. == \"$key\")" "$SOPS_YAML" > /dev/null 2>&1; then
+    yq -i ".keys += [\"$key\"]" "$SOPS_YAML"
+    echo "==> Added key to .sops.yaml: $key"
+  fi
+done
+
+SHARED_RULE="secrets/shared/.*"
+if ! yq --exit-status ".creation_rules[] | select(.path_regex == \"$SHARED_RULE\")" "$SOPS_YAML" > /dev/null 2>&1; then
+  yq -i ".creation_rules += [{
+    \"path_regex\": \"$SHARED_RULE\",
+    \"key_groups\": [{\"age\": [\"$ADMIN_AGE_KEY\", \"$SHARED_AGE_PUB\"]}]
+  }]" "$SOPS_YAML"
+  echo "==> Added shared creation rule"
+else
+  yq -i "
+    (.creation_rules[] | select(.path_regex == \"$SHARED_RULE\")
+      .key_groups[0].age) = [\"$ADMIN_AGE_KEY\", \"$SHARED_AGE_PUB\"]
+  " "$SOPS_YAML"
+  echo "==> Updated shared creation rule"
 fi
 
-if ! yq --exit-status ".keys[] | select(. == \"$MACHINE_AGE_PUB\")" "$SOPS_YAML" > /dev/null 2>&1; then
-  yq -i ".keys += [\"$MACHINE_AGE_PUB\"]" "$SOPS_YAML"
-  echo "==> Added machine age key to .sops.yaml"
-fi
-
-# age.key.yaml is admin-only — the machine already has its age key injected at install time
 ADMIN_RULE="secrets/machines/$MACHINE/age\\.key\\.yaml"
 if ! yq --exit-status ".creation_rules[] | select(.path_regex == \"$ADMIN_RULE\")" "$SOPS_YAML" > /dev/null 2>&1; then
   yq -i ".creation_rules += [{
@@ -111,7 +142,6 @@ if ! yq --exit-status ".creation_rules[] | select(.path_regex == \"$ADMIN_RULE\"
   echo "==> Added admin-only creation rule for age key"
 fi
 
-# all other machine secrets (including ssh host key) use admin + machine
 MACHINE_RULE="secrets/machines/$MACHINE/.*"
 if ! yq --exit-status ".creation_rules[] | select(.path_regex == \"$MACHINE_RULE\")" "$SOPS_YAML" > /dev/null 2>&1; then
   yq -i ".creation_rules += [{
@@ -129,14 +159,18 @@ fi
 
 echo ""
 echo "==> Done! Summary for $MACHINE:"
-echo "    Age pubkey : $(cat "$AGE_PUB")"
-echo "    SSH pubkey : $(cat "$SSH_PUB")"
+echo "    Age pubkey    : $MACHINE_AGE_PUB"
+echo "    Shared pubkey : $SHARED_AGE_PUB"
+echo "    SSH pubkey    : $(cat "$SSH_PUB")"
 echo ""
 echo "    Files to commit:"
 echo "      secrets/machines/$MACHINE/age.pub"
 echo "      secrets/machines/$MACHINE/age.key.yaml"
 echo "      secrets/machines/$MACHINE/ssh/ssh_host_ed25519_key.pub"
 echo "      secrets/machines/$MACHINE/ssh/ssh_host_ed25519_key.yaml"
+echo "      secrets/shared/shared-age-key/shared.key.yaml"
+echo "      vars/shared/shared-age-key/shared.pub"
 echo "      .sops.yaml"
 echo ""
-echo "    Next: nix run .#install-machine -- $MACHINE"
+echo "    Next: nix run .#generate -- $MACHINE"
+echo "    Then: nix run .#install-machine -- $MACHINE"

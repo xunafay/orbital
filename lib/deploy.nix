@@ -11,6 +11,7 @@ let
     let
       targetHost = machine.deploy.targetHost
         or (abort "machine '${name}' has no deploy.targetHost");
+      targetPort = toString(machine.deploy.targetPort or 22);
       buildHost  = machine.deploy.buildHost or null;
       buildFlags = lib.optionalString (buildHost != null) "--build-host ${buildHost}";
     in
@@ -21,6 +22,7 @@ let
         set -euo pipefail
         echo "==> Deploying ${name} to ${targetHost}"
 
+        export NIX_SSHOPTS="-p ${targetPort}"
         nixos-rebuild switch \
           --flake ".#${name}" \
           --target-host "${targetHost}" \

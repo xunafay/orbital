@@ -13,18 +13,25 @@ let
   knownMachines = builtins.attrNames deployableHosts;
 
   caseArms = lib.concatMapStringsSep "\n        " (name:
-    let host = deployableHosts.${name}.deploy.targetHost;
-    in "${name}) TARGET=\"${host}\" ;;"
+    let
+      host = deployableHosts.${name}.deploy.targetHost;
+      port = deployableHosts.${name}.deploy.targetPort or 22;
+    in "${name}) TARGET=\"${host}\" PORT=\"${builtins.toString port}\" ;;"
   ) knownMachines;
+
+  sshKey = inventory.bootstrapping.allowedSshKey or "";
 
   installMachine = pkgs.writeShellApplication {
     name = "install-machine";
     runtimeInputs = with pkgs; [ openssh sops age coreutils nix pv rsync ];
+    excludeShellChecks = [ "SC2034" ];
     text = ''
       KNOWN_MACHINES=${lib.escapeShellArg (lib.concatStringsSep " " knownMachines)}
       KEXEC_TARBALL=${lib.escapeShellArg kexecTarball}
       BUILD_LOCALLY=0
+      SSH_PUBKEY=${lib.escapeShellArg sshKey}
       TARGET=""
+      PORT="22"
 
       POSITIONAL=()
       for arg in "$@"; do

@@ -1,6 +1,8 @@
 keys:
   - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
   - age14tsgzrgh5k97tyx3j4u2sa2sfw6a6fv7uxgfmyzumwd7tz9xtqksm93ach
+  - age1fjkg6pf2md6azekq0yw2cm0h3auxgvpgf2pf0np2m75z8pnmjghsjl305w
+  - age1qkxq2pf24qn2muuj3kjmg3ft4uv2vnkczxkdlpjyn4t88fsdfu8sr940g3
 creation_rules:
   - path_regex: secrets/machines/mun/(age\.key|ssh/ssh_host_ed25519_key)\.yaml
     key_groups:
@@ -15,3 +17,17 @@ creation_rules:
     key_groups:
       - age:
           - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+  - path_regex: secrets/machines/europa-dv/age\.key\.yaml
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+  - path_regex: secrets/machines/europa-dv/.*
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+          - age1fjkg6pf2md6azekq0yw2cm0h3auxgvpgf2pf0np2m75z8pnmjghsjl305w
+  - path_regex: secrets/shared/.*
+    key_groups:
+      - age:
+          - age1dd0dtdjxsjqg0wq63f2wgugzyj2hr0w8ug68kr4w9guuz6d42gfs03lt6j
+          - age1qkxq2pf24qn2muuj3kjmg3ft4uv2vnkczxkdlpjyn4t88fsdfu8sr940g3

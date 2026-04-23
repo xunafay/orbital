@@ -3,19 +3,6 @@ settings:
 {
   imports = [ ./secrets.nix ];
 
-  sops.secrets."nebula_host_crt" = {
-    sopsFile = ../../secrets/machines/${machine.name}/nebula-${machine.name}/host.crt.yaml;
-    format = "yaml";
-    key = "data";
-    owner = "nebula-mesh";
-  };
-  sops.secrets."nebula_host_key" = {
-    sopsFile = ../../secrets/machines/${machine.name}/nebula-${machine.name}/host.key.yaml;
-    format = "yaml";
-    key = "data";
-    owner = "nebula-mesh";
-  };
-
   secrets.generators."nebula-${machine.name}" = {
     files."host.key" = { secret = true; };
     files."host.crt" = { secret = true; };
@@ -32,15 +19,37 @@ settings:
     '';
   };
 
-  networking.firewall = {
-    enable = true;
-    allowedUDPPorts = [ 4242 ];
+  sops.secrets."nebula_ca_crt" = {
+    sopsFile = ../../secrets/shared/nebula-ca/ca.crt.yaml;
+    format = "yaml";
+    key = "data";
+    owner = "nebula-mesh";
+  };
+  sops.secrets."nebula_host_crt" = {
+    sopsFile = ../../secrets/machines/${machine.name}/nebula-${machine.name}/host.crt.yaml;
+    format = "yaml";
+    key = "data";
+    owner = "nebula-mesh";
+  };
+  sops.secrets."nebula_host_key" = {
+    sopsFile = ../../secrets/machines/${machine.name}/nebula-${machine.name}/host.key.yaml;
+    format = "yaml";
+    key = "data";
+    owner = "nebula-mesh";
   };
 
-  services.nebula.networks.mesh = {
-    enable = true;
-    isLighthouse = true;
+  networking.hosts = {
+    "${machine.internalIp}" = [ "${machine.name}.mesh" ];
+  };
 
+  networking.firewall.trustedInterfaces = [ "nebula.mesh" ];
+
+  services.nebula.networks.mesh = {    enable = true;
+    isLighthouse = false;
+    staticHostMap = {
+      "${settings.lighthouseIp}" = [ "${settings.lighthouseHost}:4242" ];
+    };
+    lighthouses = [ settings.lighthouseIp ];
     ca   = config.sops.secrets."nebula_ca_crt".path;
     cert = config.sops.secrets."nebula_host_crt".path;
     key  = config.sops.secrets."nebula_host_key".path;
