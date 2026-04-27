@@ -1,5 +1,8 @@
 settings:
-{ inputs, config, machine, pkgs, ... }:
+{ lib, config, inventory, machine, pkgs, ... }:
+let
+  relayMachines = lib.filterAttrs (_: m: builtins.elem "relay" (m.tags or [])) inventory.machines;
+in
 {
   imports = [ ./secrets.nix ];
 
@@ -47,17 +50,19 @@ settings:
   services.nebula.networks.mesh = {
     enable = true;
     isLighthouse = false;
-    staticHostMap = {
-      "${settings.lighthouseIp}" = [ "${settings.lighthouseHost}:4242" ];
-    };
-    relays = [ "${settings.lighthouseIp}" ];
+    staticHostMap = relayMachines
+      |> lib.mapAttrs' (_: m: {
+        name  = m.internalIp;
+        value = [ "${lib.last (lib.splitString "@" m.deploy.targetHost)}:4242" ];
+      });
+    relays = relayMachines |> lib.mapAttrs (_: m: "${m.internalIp}") |> lib.attrValues;
     settings = {
       punchy = {
         punch = true;
         respond = true;
       };
     };
-    lighthouses = [ settings.lighthouseIp ];
+    lighthouses = relayMachines |> lib.mapAttrs (_: m: "${m.internalIp}") |> lib.attrValues;
     ca   = config.sops.secrets."nebula_ca_crt".path;
     cert = config.sops.secrets."nebula_host_crt".path;
     key  = config.sops.secrets."nebula_host_key".path;

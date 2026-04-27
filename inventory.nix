@@ -48,17 +48,11 @@
     nebula = {
       roles.lighthouse.tags = [ "relay" ];
       roles.peer.tags = [ "tethered" ]; 
-      roles.peer.settings = {
-        lighthouseIp   = "10.10.0.1";
-        lighthouseHost = "204.168.191.193";
-      };
       roles.external.tags = [ "all" ];
       roles.external.settings = {
         peers = {
           "hannah-phone" = {
             ip = "10.10.0.200";
-            lighthouseIp = "10.10.0.1";
-            lighthouseHost = "204.168.191.193";
           };
         };
       };
