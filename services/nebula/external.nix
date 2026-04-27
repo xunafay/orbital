@@ -56,7 +56,12 @@ settings:
             - ${peer.lighthouseIp}
             interval: 60
           listen:
-            port: 0
+            port: 4242
+          relays:
+            - ${peer.lighthouseIp}
+          punchy:
+            punch: true
+            respond: true
           logging:
             level: info
           mobile_nebula:

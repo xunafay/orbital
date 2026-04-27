@@ -40,7 +40,7 @@ settings:
   services.nebula.networks.mesh = {
     enable = true;
     isLighthouse = true;
-
+    isRelay = true;
     ca   = config.sops.secrets."nebula_ca_crt".path;
     cert = config.sops.secrets."nebula_host_crt".path;
     key  = config.sops.secrets."nebula_host_key".path;

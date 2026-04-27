@@ -44,10 +44,18 @@ settings:
 
   networking.firewall.trustedInterfaces = [ "nebula.mesh" ];
 
-  services.nebula.networks.mesh = {    enable = true;
+  services.nebula.networks.mesh = {
+    enable = true;
     isLighthouse = false;
     staticHostMap = {
       "${settings.lighthouseIp}" = [ "${settings.lighthouseHost}:4242" ];
+    };
+    relays = [ "${settings.lighthouseIp}" ];
+    settings = {
+      punchy = {
+        punch = true;
+        respond = true;
+      };
     };
     lighthouses = [ settings.lighthouseIp ];
     ca   = config.sops.secrets."nebula_ca_crt".path;
