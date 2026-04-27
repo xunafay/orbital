@@ -5,7 +5,7 @@ let
   relayIps = relayMachines |> lib.mapAttrsToList (_: m: m.internalIp);
 
   machineEntries = inventory.machines
-    |> lib.mapAttrsToList (name: m: "${m.internalIp}  ${name}.${inventory.domain}")
+    |> lib.mapAttrsToList (name: m: "${m.internalIp}  ${name}.orbital.lan")
     |> lib.concatStringsSep "\n        ";
 
   serviceEntries = config.orbital.reverseProxy
@@ -19,7 +19,7 @@ in
   services.coredns = {
     enable = true;
     config = ''
-      ${inventory.domain} {
+      orbital.lan {
         bind ${lib.concatStringsSep " " relayIps}
         hosts {
           ${machineEntries}
@@ -28,6 +28,13 @@ in
         }
         cache 30
         log
+        errors
+      }
+
+      . {
+        bind ${lib.concatStringsSep " " relayIps}
+        forward . 1.1.1.1 1.0.0.1
+        cache 30
         errors
       }
     '';
