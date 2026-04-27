@@ -22,7 +22,7 @@
     nixos-images.url = "github:nix-community/nixos-images";
   };
   nixConfig = {
-    extra-experimental-features = [ "pipe-operators" ];
+    extra-experimental-features = [ "pipe-operators" "flakes" "nix-command" ];
   };
 
   outputs =

@@ -1,7 +1,9 @@
 {
+  domain = "orbital.lan";
+
   machines = {
     mun = {
-      tags = [ "relay" "server" ];
+      tags = [ "relay" "server" "dns" ];
       deploy.targetHost = "root@204.168.191.193";
       # deploy.buildHost = "root@";
       internalIp = "10.10.0.1";
@@ -33,6 +35,13 @@
     sops = {
       roles.default.tags = [ "all" ];
     };
+    coredns = {
+      roles.host.tags = [ "dns" ];
+      roles.default.tags = [ "all" ];
+    };
+    caddy = {
+        roles.default.tags = [ "server" ];
+    };
     modules = {
       roles.workstation.tags = [ "workstation" ];
       roles.workstation.settings = {
@@ -40,6 +49,9 @@
           ./modules/networkmanager.nix
         ];
       };
+    };
+    hello = {
+      roles.default.tags = [ "server" ];
     };
     firewall = {
       roles.default.tags = [ "all" ];
