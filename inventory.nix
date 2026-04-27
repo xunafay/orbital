@@ -52,6 +52,16 @@
         lighthouseIp   = "10.10.0.1";
         lighthouseHost = "204.168.191.193";
       };
+      roles.external.tags = [ "all" ];
+      roles.external.settings = {
+        peers = {
+          "hannah-phone" = {
+            ip = "10.10.0.200";
+            lighthouseIp = "10.10.0.1";
+            lighthouseHost = "204.168.191.193";
+          };
+        };
+      };
     };
     admin-ssh = {
       roles.default.tags = [ "all" ];

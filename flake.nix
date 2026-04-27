@@ -21,6 +21,9 @@
     nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
     nixos-images.url = "github:nix-community/nixos-images";
   };
+  nixConfig = {
+    extra-experimental-features = [ "pipe-operators" ];
+  };
 
   outputs =
     { self, nixpkgs, ... }@inputs:
