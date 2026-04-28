@@ -81,15 +81,16 @@ in
             logging:
               level: info
             mobile_nebula:
-              dns_resolvers: []
+              dns_resolvers:
+              ${lighthouseHostLines}
               match_domains: []
             pki:
               ca: |
-            \$CA_CRT
+            $CA_CRT
               cert: |
-            \$HOST_CRT
+            $HOST_CRT
               key: |
-            \$HOST_KEY
+            $HOST_KEY
             static_host_map:
               ${staticHostMapLines}
             static_map:

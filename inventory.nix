@@ -66,9 +66,7 @@
       roles.external.tags = [ "all" ];
       roles.external.settings = {
         peers = {
-          "hannah-phone" = {
-            ip = "10.10.0.200";
-          };
+          pluto.ip = "10.10.0.200";
         };
       };
     };
