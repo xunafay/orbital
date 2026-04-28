@@ -53,6 +53,9 @@
     hello = {
       roles.default.tags = [ "server" ];
     };
+    uptime-kuma = {
+      roles.default.tags = [ "server" ];
+    };
     firewall = {
       roles.default.tags = [ "all" ];
       roles.spotify.tags = [ "workstation" ];
