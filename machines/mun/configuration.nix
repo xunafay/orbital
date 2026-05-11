@@ -2,6 +2,7 @@
 {
   imports = [
     ./disko.nix
+    ../../modules/reitti/default.nix
   ];
 
   networking.hostName = "mun";

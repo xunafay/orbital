@@ -1,0 +1,5 @@
+theme = Catppuccin Mocha
+font-size = 10
+font-thicken = true
+font-style = bold
+shell-integration-features = ssh-env,ssh-terminfo

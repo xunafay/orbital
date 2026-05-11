@@ -14,6 +14,11 @@
       deploy.targetPort = 22220;
       internalIp = "10.10.0.2";
     };
+    europa = {
+      tags = [ "tethered" "workstation"];
+      deploy.targetHost = "root@localhost";
+      internalIp = "10.10.0.3";
+    };
   };
 
   bootstrapping = {
@@ -40,21 +45,29 @@
       roles.default.tags = [ "all" ];
     };
     caddy = {
-        roles.default.tags = [ "server" ];
+        roles.default.machines.mun = {};
     };
     modules = {
+      roles.default.tags = [ "all" ];
+      roles.default.settings = {
+        modules = [
+          ./modules/input.nix
+          ./modules/features.nix
+        ];
+      };
       roles.workstation.tags = [ "workstation" ];
       roles.workstation.settings = {
         modules = [
           ./modules/networkmanager.nix
+          ./users/hannah/home.nix
         ];
       };
     };
-    hello = {
-      roles.default.tags = [ "server" ];
-    };
     uptime-kuma = {
-      roles.default.tags = [ "server" ];
+      roles.default.machines.mun = {};
+    };
+    grafana = {
+      roles.default.machines.mun = {};
     };
     firewall = {
       roles.default.tags = [ "all" ];
