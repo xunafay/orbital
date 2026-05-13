@@ -11,8 +11,7 @@ lib.mapAttrs (name: machine:
     };
     modules =
       [
-        ../modules/secrets.nix
-        ../modules/reverseProxy.nix
+        ../modules/options
         ../machines/${name}/configuration.nix
         inputs.disko.nixosModules.disko
         inputs.sops-nix.nixosModules.sops

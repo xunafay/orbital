@@ -69,6 +69,14 @@
     grafana = {
       roles.default.machines.mun = {};
     };
+    reitti = {
+      roles.default.machines.mun = {};
+      # roles.default.machines.europa = {};
+    };
+    postgresql = {
+      roles.primary.machines.mun = {};
+      roles.replica.machines.europa = {};
+    };
     firewall = {
       roles.default.tags = [ "all" ];
       roles.spotify.tags = [ "workstation" ];
